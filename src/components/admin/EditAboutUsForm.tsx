@@ -12,6 +12,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+// Define a type for the page content since it's not yet in the Supabase types
+interface PageContent {
+  id: string;
+  page_name: string;
+  mission?: string | null;
+  story?: string | null;
+  creator_name?: string | null;
+  creator_title?: string | null;
+  creator_bio?: string | null;
+  creator_image?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
 // Form schema with validation
 const formSchema = z.object({
   mission: z.string().min(10, "Mission statement must be at least 10 characters"),
@@ -45,6 +59,7 @@ export function EditAboutUsForm() {
     async function fetchContent() {
       setIsLoading(true);
       try {
+        // We need to use the typed fetch to properly handle the response
         const { data, error } = await supabase
           .from("page_content")
           .select("*")
@@ -57,14 +72,16 @@ export function EditAboutUsForm() {
         }
 
         if (data) {
+          // Cast the data to our PageContent type
+          const pageContent = data as unknown as PageContent;
           // Reset form with existing data
           form.reset({
-            mission: data.mission || "",
-            story: data.story || "",
-            creator_name: data.creator_name || "",
-            creator_title: data.creator_title || "",
-            creator_bio: data.creator_bio || "",
-            creator_image: data.creator_image || "",
+            mission: pageContent.mission || "",
+            story: pageContent.story || "",
+            creator_name: pageContent.creator_name || "",
+            creator_title: pageContent.creator_title || "",
+            creator_bio: pageContent.creator_bio || "",
+            creator_image: pageContent.creator_image || "",
           });
         }
       } catch (error) {
@@ -86,7 +103,7 @@ export function EditAboutUsForm() {
         .from("page_content")
         .select("id")
         .eq("page_name", "uber-uns")
-        .single();
+        .maybeSingle();
 
       let result;
       if (existing) {
@@ -100,10 +117,12 @@ export function EditAboutUsForm() {
           .eq("id", existing.id);
       } else {
         // Insert new content
-        result = await supabase.from("page_content").insert({
-          page_name: "uber-uns",
-          ...values,
-        });
+        result = await supabase
+          .from("page_content")
+          .insert({
+            page_name: "uber-uns",
+            ...values,
+          });
       }
 
       if (result.error) throw result.error;

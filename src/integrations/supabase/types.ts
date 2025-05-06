@@ -24,6 +24,45 @@ export type Database = {
         }
         Relationships: []
       }
+      page_content: {
+        Row: {
+          created_at: string | null
+          creator_bio: string | null
+          creator_image: string | null
+          creator_name: string | null
+          creator_title: string | null
+          id: string
+          mission: string | null
+          page_name: string
+          story: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_bio?: string | null
+          creator_image?: string | null
+          creator_name?: string | null
+          creator_title?: string | null
+          id?: string
+          mission?: string | null
+          page_name: string
+          story?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_bio?: string | null
+          creator_image?: string | null
+          creator_name?: string | null
+          creator_title?: string | null
+          id?: string
+          mission?: string | null
+          page_name?: string
+          story?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       required_documents: {
         Row: {
           document_name: string

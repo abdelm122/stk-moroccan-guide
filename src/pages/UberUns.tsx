@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,18 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Interface for the page content
-interface AboutUsContent {
+interface PageContent {
   id: string;
-  mission: string;
-  story: string;
-  creator_name: string;
-  creator_title: string;
-  creator_bio: string;
-  creator_image: string;
+  page_name: string;
+  mission?: string | null;
+  story?: string | null;
+  creator_name?: string | null;
+  creator_title?: string | null;
+  creator_bio?: string | null;
+  creator_image?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 const UberUns = () => {
-  const [content, setContent] = useState<AboutUsContent | null>(null);
+  const [content, setContent] = useState<PageContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ const UberUns = () => {
         if (error) throw error;
         
         if (data) {
-          setContent(data);
+          setContent(data as unknown as PageContent);
         }
       } catch (err) {
         console.error('Error fetching about us content:', err);
@@ -50,8 +52,9 @@ const UberUns = () => {
   }, []);
 
   // Default content to use if none is found in the database
-  const defaultContent: AboutUsContent = {
+  const defaultContent: PageContent = {
     id: 'default',
+    page_name: 'uber-uns',
     mission: 'STK Community was created by Abdelmounaim Oulad Ali to serve as a comprehensive resource for Moroccan students who wish to pursue their higher education in Germany through the Studienkolleg pathway.',
     story: 'The idea for STK Community was born from personal experience. Having gone through the challenging process of applying to Studienkollegs, our founder Abdelmounaim Oulad Ali recognized the need for a centralized, reliable source of information specifically for Moroccan students.',
     creator_name: 'Abdelmounaim Oulad Ali',
