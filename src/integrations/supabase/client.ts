@@ -8,8 +8,15 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://dgoyfmccassqjlydkbat.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnb3lmbWNjYXNzcWpseWRrYmF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjYyNDIsImV4cCI6MjA2MTk0MjI0Mn0.t3bqH7jMBQr5tNAE4vOrbbLOOgrWWAW2mK3KtL5P9Bk";
 
-// Determine if we're in a GitHub Pages environment
-const isGitHubPages = window.location.hostname.includes('github.io');
+// Get the current URL for GitHub Pages compatibility
+const getCurrentUrl = () => {
+  // Get the current origin
+  const origin = window.location.origin;
+  // Get the pathname without hash fragment for GitHub Pages compatibility
+  const pathname = window.location.pathname.split('#')[0];
+  // Return the full URL
+  return `${origin}${pathname}`;
+};
 
 // Create and export the Supabase client with comprehensive options for better reliability
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -17,7 +24,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'implicit'
+    flowType: 'implicit',
+    // Using hash-based redirects for GitHub Pages compatibility
+    redirectTo: getCurrentUrl()
   },
   global: {
     headers: {
@@ -98,7 +107,9 @@ export const adminLogin = async (username: string, password: string) => {
             data: {
               username: username, // Store username in user metadata for JWT claims
               role: 'admin'
-            }
+            },
+            // Configure redirect URL for GitHub Pages
+            redirectTo: getCurrentUrl()
           }
         });
         
