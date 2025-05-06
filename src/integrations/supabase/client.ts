@@ -6,16 +6,25 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://dgoyfmccassqjlydkbat.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnb3lmbWNjYXNzcWpseWRrYmF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjYyNDIsImV4cCI6MjA2MTk0MjI0Mn0.t3bqH7jMBQr5tNAE4vOrbbLOOgrWWAW2mK3KtL5P9Bk";
 
-// Create and export the Supabase client with additional options for domain flexibility
+// Create and export the Supabase client with comprehensive options for better reliability
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'implicit'
   },
   global: {
     headers: {
       'X-Client-Info': `supabase-js-web/2.49.4`
     }
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  },
+  db: {
+    schema: 'public'
   }
 });
