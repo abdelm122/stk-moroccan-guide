@@ -37,7 +37,8 @@ export function DocumentManager() {
       
       // Handle data safely with proper type casting
       if (data) {
-        setDocuments(data as DocumentRow[]);
+        // Explicitly cast data to DocumentRow[] to handle type compatibility
+        setDocuments(data as unknown as DocumentRow[]);
       } else {
         setDocuments([]);
       }
@@ -99,7 +100,7 @@ export function DocumentManager() {
       // Insert the document record with proper type handling
       const { error: insertError } = await supabase
         .from('documents')
-        .insert([documentToInsert as any]);
+        .insert(documentToInsert as any);
         
       if (insertError) throw insertError;
       
@@ -277,17 +278,4 @@ export function DocumentManager() {
       </Card>
     </div>
   );
-
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' bytes';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-  
-  function getFileIcon(fileType: string) {
-    if (fileType.includes('pdf')) return 'pdf';
-    if (fileType.includes('word') || fileType.includes('doc')) return 'doc';
-    if (fileType.includes('sheet') || fileType.includes('excel') || fileType.includes('xls')) return 'xls';
-    return 'file';
-  }
 }
