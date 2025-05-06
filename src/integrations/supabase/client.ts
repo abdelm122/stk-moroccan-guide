@@ -42,10 +42,16 @@ export const isAdmin = async () => {
   const { data } = await supabase.auth.getSession();
   if (!data.session) return false;
   
+  // Check if user has admin role in metadata
+  if (data.session.user.user_metadata?.role === 'admin') {
+    return true;
+  }
+  
   // Check if user exists in admins table
   const { data: adminData, error } = await supabase
     .from('admins')
     .select('username')
+    .eq('username', data.session.user.user_metadata?.username || '')
     .single();
   
   if (error || !adminData) {
