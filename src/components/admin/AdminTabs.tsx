@@ -1,5 +1,8 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditAboutUsForm } from "./EditAboutUsForm";
+import { UniversityManager } from "./UniversityManager";
+import { InformationEditor } from "./InformationEditor";
 
 export function AdminTabs() {
   return (
@@ -15,7 +18,7 @@ export function AdminTabs() {
         <p className="text-muted-foreground mb-6">
           Add, edit, or remove universities from the database.
         </p>
-        {/* Existing university management content will go here */}
+        <UniversityManager />
       </TabsContent>
       
       <TabsContent value="pages">
@@ -26,6 +29,7 @@ export function AdminTabs() {
         
         <div className="space-y-8">
           <EditAboutUsForm />
+          <InformationEditor />
           
           {/* We can add forms for other pages later */}
         </div>
