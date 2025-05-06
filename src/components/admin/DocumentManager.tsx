@@ -35,8 +35,12 @@ export function DocumentManager() {
         
       if (error) throw error;
       
-      // Use type assertion to ensure correct type
-      setDocuments(data as DocumentRow[]);
+      // Handle data safely
+      if (data) {
+        setDocuments(data as unknown as DocumentRow[]);
+      } else {
+        setDocuments([]);
+      }
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast.error("Failed to load documents");
@@ -84,7 +88,7 @@ export function DocumentManager() {
       
       const publicUrl = publicUrlData.publicUrl;
       
-      // Create a document object that matches the DocumentInsert type
+      // Create a document object that aligns with the DocumentInsert type
       const documentToInsert: DocumentInsert = {
         name: documentName,
         file_path: filePath,
@@ -95,7 +99,7 @@ export function DocumentManager() {
       // Insert the document record
       const { error: insertError } = await supabase
         .from('documents')
-        .insert([documentToInsert]);
+        .insert(documentToInsert);
         
       if (insertError) throw insertError;
       
@@ -121,11 +125,11 @@ export function DocumentManager() {
         
       if (storageError) throw storageError;
       
-      // Delete the record from the documents table using eq instead of direct comparison
+      // Delete the record from the documents table
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id as unknown as string);
+        .eq('id', id);
         
       if (dbError) throw dbError;
       

@@ -58,20 +58,21 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen' as unknown as string)
+        .eq('page_name', 'unterlagen')
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
         throw error;
       }
       
-      if (data) {
+      // Type guard to ensure data is not an error
+      if (data && !('error' in data)) {
         // Create a properly typed document page content object
         const content: DocumentPageContent = {
           id: data.id,
           page_name: data.page_name,
-          faqs: data.faqs as unknown as FAQItem[] | null,
-          preparation_steps: data.preparation_steps as unknown as PreparationStep[] | null,
+          faqs: data.faqs as FAQItem[] | null,
+          preparation_steps: data.preparation_steps as PreparationStep[] | null,
           updated_at: data.updated_at,
           created_at: data.created_at,
           mission: data.mission,
@@ -96,6 +97,10 @@ export function DocumentPageEditor() {
     } catch (error) {
       console.error("Error fetching page content:", error);
       toast.error("Failed to load document page content");
+      
+      // Initialize with default values in case of error
+      setFaqs([{ question: "", answer: "" }]);
+      setPreparationSteps([{ title: "", description: "", required_items: [""] }]);
     } finally {
       setLoading(false);
     }
@@ -180,7 +185,7 @@ export function DocumentPageEditor() {
         const { error } = await supabase
           .from('page_content')
           .update(updateData)
-          .eq('id', pageContent.id as unknown as string);
+          .eq('id', pageContent.id);
           
         if (error) throw error;
       } 
@@ -188,7 +193,7 @@ export function DocumentPageEditor() {
       else {
         const { error } = await supabase
           .from('page_content')
-          .insert([updateData]);
+          .insert(updateData);
           
         if (error) throw error;
       }
