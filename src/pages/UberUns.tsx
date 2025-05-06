@@ -1,10 +1,91 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Interface for the page content
+interface AboutUsContent {
+  id: string;
+  mission: string;
+  story: string;
+  creator_name: string;
+  creator_title: string;
+  creator_bio: string;
+  creator_image: string;
+}
 
 const UberUns = () => {
+  const [content, setContent] = useState<AboutUsContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchContent() {
+      try {
+        const { data, error } = await supabase
+          .from('page_content')
+          .select('*')
+          .eq('page_name', 'uber-uns')
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          setContent(data);
+        }
+      } catch (err) {
+        console.error('Error fetching about us content:', err);
+        setError('Failed to load page content');
+        // If no content is found, use default content
+        setContent(defaultContent);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchContent();
+  }, []);
+
+  // Default content to use if none is found in the database
+  const defaultContent: AboutUsContent = {
+    id: 'default',
+    mission: 'STK Community was created by Abdelmounaim Oulad Ali to serve as a comprehensive resource for Moroccan students who wish to pursue their higher education in Germany through the Studienkolleg pathway.',
+    story: 'The idea for STK Community was born from personal experience. Having gone through the challenging process of applying to Studienkollegs, our founder Abdelmounaim Oulad Ali recognized the need for a centralized, reliable source of information specifically for Moroccan students.',
+    creator_name: 'Abdelmounaim Oulad Ali',
+    creator_title: 'Founder, STK Community',
+    creator_bio: 'Abdelmounaim is a former Studienkolleg student who successfully navigated the German education system. With a passion for helping others, he created STK Community to make the process easier for fellow Moroccan students.',
+    creator_image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <div className="stk-hero py-12">
+          <div className="stk-container text-center">
+            <Skeleton className="h-12 w-1/3 mx-auto mb-4" />
+            <Skeleton className="h-6 w-2/3 mx-auto" />
+          </div>
+        </div>
+        <div className="stk-container py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2 space-y-8">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-96 w-full" />
+            </div>
+            <div className="md:col-span-1">
+              <Skeleton className="h-80 w-full mb-8" />
+              <Skeleton className="h-40 w-full mb-8" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -24,9 +105,7 @@ const UberUns = () => {
             <div>
               <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
               <p className="text-lg mb-4">
-                STK Community was created by Abdelmounaim Oulad Ali to serve as a comprehensive resource 
-                for Moroccan students who wish to pursue their higher education in Germany through the 
-                Studienkolleg pathway.
+                {content?.mission || defaultContent.mission}
               </p>
               <p className="text-lg mb-4">
                 We understand that navigating the German education system can be challenging, especially 
@@ -84,10 +163,7 @@ const UberUns = () => {
             <div>
               <h2 className="text-3xl font-bold mb-4">Our Story</h2>
               <p className="text-lg mb-4">
-                The idea for STK Community was born from personal experience. Having gone through the 
-                challenging process of applying to Studienkollegs, our founder Abdelmounaim Oulad Ali 
-                recognized the need for a centralized, reliable source of information specifically for 
-                Moroccan students.
+                {content?.story || defaultContent.story}
               </p>
               <p className="text-lg mb-4">
                 What started as a small project to help friends and family has grown into a comprehensive 
@@ -108,18 +184,16 @@ const UberUns = () => {
                   <div className="flex flex-col items-center mb-4">
                     <div className="w-32 h-32 rounded-full overflow-hidden mb-4">
                       <img 
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e" 
-                        alt="Abdelmounaim Oulad Ali" 
+                        src={content?.creator_image || defaultContent.creator_image} 
+                        alt={content?.creator_name || defaultContent.creator_name} 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <h4 className="font-semibold text-lg">Abdelmounaim Oulad Ali</h4>
-                    <p className="text-gray-600">Founder, STK Community</p>
+                    <h4 className="font-semibold text-lg">{content?.creator_name || defaultContent.creator_name}</h4>
+                    <p className="text-gray-600">{content?.creator_title || defaultContent.creator_title}</p>
                   </div>
                   <p className="text-sm">
-                    Abdelmounaim is a former Studienkolleg student who successfully navigated the German 
-                    education system. With a passion for helping others, he created STK Community to make 
-                    the process easier for fellow Moroccan students.
+                    {content?.creator_bio || defaultContent.creator_bio}
                   </p>
                 </CardContent>
               </Card>
@@ -176,7 +250,7 @@ const UberUns = () => {
             </div>
             <div>
               <h3 className="text-xl font-bold mb-4">Contact</h3>
-              <p>Created by Abdelmounaim Oulad Ali</p>
+              <p>Created by {content?.creator_name || defaultContent.creator_name}</p>
               <div className="flex gap-4 mt-4">
                 <a href="#" aria-label="Facebook" className="hover:text-secondary">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
