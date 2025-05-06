@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileDown, CheckCircle, AlertCircle, HelpCircle, ArrowDown, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Json } from '@/integrations/supabase/types';
 
 interface Document {
   id: string | number;
@@ -122,8 +123,8 @@ const Unterlagen = () => {
       if (data) {
         setPageContent({
           ...data,
-          faqs: data.faqs || getDefaultFAQs(),
-          preparation_steps: data.preparation_steps || getDefaultPreparationSteps()
+          faqs: (data.faqs as FAQItem[]) || getDefaultFAQs(),
+          preparation_steps: (data.preparation_steps as PreparationStep[]) || getDefaultPreparationSteps()
         });
       } else {
         // Use default data if none exists in the database
@@ -484,7 +485,7 @@ const Unterlagen = () => {
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full">
-            {pageContent.faqs.map((faq, index) => (
+            {pageContent.faqs && pageContent.faqs.map((faq, index) => (
               <AccordionItem key={index} value={`faq-${index}`}>
                 <AccordionTrigger>{faq.question}</AccordionTrigger>
                 <AccordionContent>
@@ -503,7 +504,7 @@ const Unterlagen = () => {
             <div className="hidden md:block absolute left-1/2 h-full w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
             
             <div className="space-y-12">
-              {pageContent.preparation_steps.map((step, index) => (
+              {pageContent.preparation_steps && pageContent.preparation_steps.map((step, index) => (
                 <div key={index} className="relative flex flex-col md:flex-row">
                   <div className={`flex-1 md:${index % 2 === 0 ? 'text-right md:pr-8' : 'pl-8'} mb-4 md:mb-0`}>
                     {index % 2 === 0 ? (

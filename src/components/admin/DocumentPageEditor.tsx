@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { X, Plus, Save } from "lucide-react";
+import { Json } from "@/integrations/supabase/types";
 
 interface FAQItem {
   question: string;
@@ -66,12 +67,20 @@ export function DocumentPageEditor() {
         setPageContent({
           id: data.id,
           page_name: data.page_name,
-          faqs: data.faqs || [],
-          preparation_steps: data.preparation_steps || [],
-          updated_at: data.updated_at
+          faqs: data.faqs as FAQItem[] | null,
+          preparation_steps: data.preparation_steps as PreparationStep[] | null,
+          updated_at: data.updated_at,
+          created_at: data.created_at,
+          mission: data.mission,
+          story: data.story,
+          creator_name: data.creator_name,
+          creator_title: data.creator_title,
+          creator_bio: data.creator_bio,
+          creator_image: data.creator_image,
+          video_url: data.video_url
         });
-        setFaqs(data.faqs || []);
-        setPreparationSteps(data.preparation_steps || []);
+        setFaqs(data.faqs ? (data.faqs as FAQItem[]) : [{ question: "", answer: "" }]);
+        setPreparationSteps(data.preparation_steps ? (data.preparation_steps as PreparationStep[]) : [{ title: "", description: "", required_items: [""] }]);
       } else {
         // Initialize with empty arrays if no data exists
         setFaqs([{ question: "", answer: "" }]);
@@ -155,8 +164,8 @@ export function DocumentPageEditor() {
     try {
       const updateData = {
         page_name: 'unterlagen',
-        faqs,
-        preparation_steps: preparationSteps,
+        faqs: faqs as Json,
+        preparation_steps: preparationSteps as Json,
       };
       
       // If we already have page content, update it
