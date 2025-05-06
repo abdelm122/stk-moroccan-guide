@@ -4,14 +4,16 @@ import { EditAboutUsForm } from "./EditAboutUsForm";
 import { UniversityManager } from "./UniversityManager";
 import { InformationEditor } from "./InformationEditor";
 import { DocumentManager } from "./DocumentManager";
+import { DocumentPageEditor } from "./DocumentPageEditor";
 
 export function AdminTabs() {
   return (
     <Tabs defaultValue="universities" className="w-full">
-      <TabsList className="grid grid-cols-3 mb-8">
+      <TabsList className="grid grid-cols-4 mb-8">
         <TabsTrigger value="universities">Universities</TabsTrigger>
         <TabsTrigger value="pages">Page Content</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
+        <TabsTrigger value="required-docs">Required Docs</TabsTrigger>
       </TabsList>
       
       <TabsContent value="universities">
@@ -42,6 +44,14 @@ export function AdminTabs() {
           Upload document requirements and templates for users to download.
         </p>
         <DocumentManager />
+      </TabsContent>
+      
+      <TabsContent value="required-docs">
+        <h2 className="text-2xl font-bold mb-4">Required Documents Page</h2>
+        <p className="text-muted-foreground mb-6">
+          Edit the FAQs, document preparation steps, and other content on the Required Documents page.
+        </p>
+        <DocumentPageEditor />
       </TabsContent>
     </Tabs>
   );
