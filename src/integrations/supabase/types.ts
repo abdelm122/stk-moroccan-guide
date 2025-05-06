@@ -58,9 +58,11 @@ export type Database = {
           creator_image: string | null
           creator_name: string | null
           creator_title: string | null
+          faqs: Json | null
           id: string
           mission: string | null
           page_name: string
+          preparation_steps: Json | null
           story: string | null
           updated_at: string | null
           video_url: string | null
@@ -71,9 +73,11 @@ export type Database = {
           creator_image?: string | null
           creator_name?: string | null
           creator_title?: string | null
+          faqs?: Json | null
           id?: string
           mission?: string | null
           page_name: string
+          preparation_steps?: Json | null
           story?: string | null
           updated_at?: string | null
           video_url?: string | null
@@ -84,9 +88,11 @@ export type Database = {
           creator_image?: string | null
           creator_name?: string | null
           creator_title?: string | null
+          faqs?: Json | null
           id?: string
           mission?: string | null
           page_name?: string
+          preparation_steps?: Json | null
           story?: string | null
           updated_at?: string | null
           video_url?: string | null

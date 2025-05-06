@@ -27,6 +27,14 @@ interface DocumentPageContent {
   faqs: FAQItem[] | null;
   preparation_steps: PreparationStep[] | null;
   updated_at: string | null;
+  created_at?: string | null;
+  mission?: string | null;
+  story?: string | null;
+  creator_name?: string | null;
+  creator_title?: string | null;
+  creator_bio?: string | null;
+  creator_image?: string | null;
+  video_url?: string | null;
 }
 
 export function DocumentPageEditor() {

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Document {
-  id: string | number; // Allow both string and number to accommodate different data sources
+  id: string | number;
   title: string;
   description: string;
   file_url: string;
@@ -29,8 +29,19 @@ interface PreparationStep {
 }
 
 interface PageContent {
-  faqs: FAQItem[];
-  preparation_steps: PreparationStep[];
+  id: string;
+  page_name: string;
+  faqs: FAQItem[] | null;
+  preparation_steps: PreparationStep[] | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  mission?: string | null;
+  story?: string | null;
+  creator_name?: string | null;
+  creator_title?: string | null;
+  creator_bio?: string | null;
+  creator_image?: string | null;
+  video_url?: string | null;
 }
 
 const Unterlagen = () => {
@@ -38,6 +49,8 @@ const Unterlagen = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [pageContent, setPageContent] = useState<PageContent>({
+    id: 'default',
+    page_name: 'unterlagen',
     faqs: [],
     preparation_steps: []
   });
@@ -108,22 +121,29 @@ const Unterlagen = () => {
       
       if (data) {
         setPageContent({
+          ...data,
           faqs: data.faqs || getDefaultFAQs(),
           preparation_steps: data.preparation_steps || getDefaultPreparationSteps()
         });
       } else {
         // Use default data if none exists in the database
         setPageContent({
+          id: 'default',
+          page_name: 'unterlagen',
           faqs: getDefaultFAQs(),
-          preparation_steps: getDefaultPreparationSteps()
+          preparation_steps: getDefaultPreparationSteps(),
+          updated_at: null
         });
       }
     } catch (error) {
       console.error("Error fetching page content:", error);
       // Fall back to default content
       setPageContent({
+        id: 'default',
+        page_name: 'unterlagen',
         faqs: getDefaultFAQs(),
-        preparation_steps: getDefaultPreparationSteps()
+        preparation_steps: getDefaultPreparationSteps(),
+        updated_at: null
       });
     }
   };
