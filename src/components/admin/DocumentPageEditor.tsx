@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,11 @@ import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { X, Plus, Save } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
+import { Json } from '@/integrations/supabase/types';
 
 type PageContentRow = Database['public']['Tables']['page_content']['Row'];
 type PageContentInsert = Database['public']['Tables']['page_content']['Insert'];
+type PageContentUpdate = Database['public']['Tables']['page_content']['Update'];
 
 interface FAQItem {
   question: string;
@@ -58,15 +59,15 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen')
+        .eq('page_name', 'unterlagen' as unknown as string)
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
         throw error;
       }
       
-      // Type guard to ensure data is not an error
-      if (data && !('error' in data)) {
+      // Use proper type checking and casting
+      if (data && typeof data === 'object' && 'id' in data) {
         // Create a properly typed document page content object
         const content: DocumentPageContent = {
           id: data.id,
@@ -174,10 +175,10 @@ export function DocumentPageEditor() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updateData: PageContentInsert = {
+      const updateData: PageContentUpdate = {
         page_name: 'unterlagen',
-        faqs: faqs as any,
-        preparation_steps: preparationSteps as any,
+        faqs: faqs as unknown as Json,
+        preparation_steps: preparationSteps as unknown as Json,
       };
       
       // If we already have page content, update it
@@ -185,7 +186,7 @@ export function DocumentPageEditor() {
         const { error } = await supabase
           .from('page_content')
           .update(updateData)
-          .eq('id', pageContent.id);
+          .eq('id', pageContent.id as unknown as string);
           
         if (error) throw error;
       } 
@@ -193,7 +194,7 @@ export function DocumentPageEditor() {
       else {
         const { error } = await supabase
           .from('page_content')
-          .insert(updateData);
+          .insert([updateData as PageContentInsert]);
           
         if (error) throw error;
       }

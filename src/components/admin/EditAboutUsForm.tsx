@@ -11,20 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
-// Define a type for the page content since it's not yet in the Supabase types
-interface PageContent {
-  id: string;
-  page_name: string;
-  mission?: string | null;
-  story?: string | null;
-  creator_name?: string | null;
-  creator_title?: string | null;
-  creator_bio?: string | null;
-  creator_image?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
+// Define types using the Supabase generated types
+type PageContent = Database['public']['Tables']['page_content']['Row'];
+type PageContentUpdate = Database['public']['Tables']['page_content']['Update'];
+type PageContentInsert = Database['public']['Tables']['page_content']['Insert'];
 
 // Form schema with validation
 const formSchema = z.object({
@@ -41,6 +33,7 @@ type FormData = z.infer<typeof formSchema>;
 export function EditAboutUsForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [existingContent, setExistingContent] = useState<PageContent | null>(null);
 
   // Initialize form with default values
   const form = useForm<FormData>({
@@ -63,25 +56,27 @@ export function EditAboutUsForm() {
         const { data, error } = await supabase
           .from("page_content")
           .select("*")
-          .eq("page_name", "uber-uns")
-          .single();
+          .eq("page_name", "uber-uns" as unknown as string)
+          .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
           // PGRST116 means not found
           throw error;
         }
 
-        if (data) {
-          // Cast the data to our PageContent type
-          const pageContent = data as unknown as PageContent;
+        // Only process data if it's valid and has the expected shape
+        if (data && typeof data === 'object' && 'id' in data) {
+          // Store the full content object for later use
+          setExistingContent(data as PageContent);
+          
           // Reset form with existing data
           form.reset({
-            mission: pageContent.mission || "",
-            story: pageContent.story || "",
-            creator_name: pageContent.creator_name || "",
-            creator_title: pageContent.creator_title || "",
-            creator_bio: pageContent.creator_bio || "",
-            creator_image: pageContent.creator_image || "",
+            mission: data.mission || "",
+            story: data.story || "",
+            creator_name: data.creator_name || "",
+            creator_title: data.creator_title || "",
+            creator_bio: data.creator_bio || "",
+            creator_image: data.creator_image || "",
           });
         }
       } catch (error) {
@@ -102,27 +97,32 @@ export function EditAboutUsForm() {
       const { data: existing } = await supabase
         .from("page_content")
         .select("id")
-        .eq("page_name", "uber-uns")
+        .eq("page_name", "uber-uns" as unknown as string)
         .maybeSingle();
 
+      // Use proper typing for updateData
+      const updateData: PageContentUpdate = {
+        ...values,
+        updated_at: new Date().toISOString(),
+      };
+
       let result;
-      if (existing) {
+      if (existing && typeof existing === 'object' && 'id' in existing) {
         // Update existing content
         result = await supabase
           .from("page_content")
-          .update({
-            ...values,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq("id", existing.id);
       } else {
-        // Insert new content
+        // Insert new content with the correct type
+        const insertData: PageContentInsert = {
+          page_name: "uber-uns",
+          ...values,
+        };
+        
         result = await supabase
           .from("page_content")
-          .insert({
-            page_name: "uber-uns",
-            ...values,
-          });
+          .insert([insertData]);
       }
 
       if (result.error) throw result.error;

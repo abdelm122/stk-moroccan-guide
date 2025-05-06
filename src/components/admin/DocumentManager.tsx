@@ -37,6 +37,7 @@ export function DocumentManager() {
       
       // Handle data safely
       if (data) {
+        // Explicitly cast to the correct type
         setDocuments(data as unknown as DocumentRow[]);
       } else {
         setDocuments([]);
@@ -96,10 +97,10 @@ export function DocumentManager() {
         type: selectedFile.type
       };
 
-      // Insert the document record
+      // Insert the document record - we need to wrap in an array for supabase-js v2
       const { error: insertError } = await supabase
         .from('documents')
-        .insert(documentToInsert);
+        .insert([documentToInsert]);
         
       if (insertError) throw insertError;
       
@@ -129,7 +130,7 @@ export function DocumentManager() {
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id);
+        .eq('id', id as unknown as string); // Cast to make TypeScript happy
         
       if (dbError) throw dbError;
       
