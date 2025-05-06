@@ -35,9 +35,9 @@ export function DocumentManager() {
         
       if (error) throw error;
       
-      // Handle data safely
+      // Handle data safely with proper type casting
       if (data) {
-        setDocuments(data);
+        setDocuments(data as DocumentRow[]);
       } else {
         setDocuments([]);
       }
@@ -96,10 +96,10 @@ export function DocumentManager() {
         type: selectedFile.type
       };
 
-      // Insert the document record - we need to wrap it in an array for Supabase
+      // Insert the document record with proper type handling
       const { error: insertError } = await supabase
         .from('documents')
-        .insert([documentToInsert]);
+        .insert([documentToInsert as any]);
         
       if (insertError) throw insertError;
       
@@ -125,11 +125,11 @@ export function DocumentManager() {
         
       if (storageError) throw storageError;
       
-      // Delete the record from the documents table
+      // Delete the record from the documents table with proper type handling
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id);
+        .eq('id', id as any);
         
       if (dbError) throw dbError;
       
@@ -277,4 +277,17 @@ export function DocumentManager() {
       </Card>
     </div>
   );
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  
+  function getFileIcon(fileType: string) {
+    if (fileType.includes('pdf')) return 'pdf';
+    if (fileType.includes('word') || fileType.includes('doc')) return 'doc';
+    if (fileType.includes('sheet') || fileType.includes('excel') || fileType.includes('xls')) return 'xls';
+    return 'file';
+  }
 }

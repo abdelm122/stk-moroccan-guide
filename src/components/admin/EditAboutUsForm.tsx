@@ -56,7 +56,7 @@ export function EditAboutUsForm() {
         const { data, error } = await supabase
           .from("page_content")
           .select("*")
-          .eq("page_name", "uber-uns")
+          .eq("page_name", "uber-uns" as any)
           .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
@@ -97,14 +97,14 @@ export function EditAboutUsForm() {
       const { data: existing } = await supabase
         .from("page_content")
         .select("id")
-        .eq("page_name", "uber-uns")
+        .eq("page_name", "uber-uns" as any)
         .maybeSingle();
 
       // Create update data with proper typing
       const updateData = {
         ...values,
         updated_at: new Date().toISOString(),
-      } as PageContentUpdate;
+      } as unknown as PageContentUpdate;
 
       let result;
       if (existing && typeof existing === 'object' && 'id' in existing) {
@@ -118,11 +118,11 @@ export function EditAboutUsForm() {
         const insertData = {
           page_name: "uber-uns",
           ...values,
-        } as PageContentInsert;
+        } as unknown as PageContentInsert;
         
         result = await supabase
           .from("page_content")
-          .insert([insertData]);
+          .insert([insertData] as any);
       }
 
       if (result.error) throw result.error;

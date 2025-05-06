@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -60,19 +59,19 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen')
+        .eq('page_name', 'unterlagen' as any)
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
         throw error;
       }
       
-      // Use proper type checking and casting
-      if (data && typeof data === 'object' && 'id' in data) {
+      // Use proper type checking and casting with null safety
+      if (data && typeof data === 'object') {
         // Create a properly typed document page content object
         const content: DocumentPageContent = {
-          id: data.id,
-          page_name: data.page_name,
+          id: data.id || '',
+          page_name: data.page_name || 'unterlagen',
           faqs: data.faqs as FAQItem[] | null,
           preparation_steps: data.preparation_steps as PreparationStep[] | null,
           updated_at: data.updated_at,
@@ -181,23 +180,23 @@ export function DocumentPageEditor() {
         page_name: 'unterlagen',
         faqs: faqs as unknown as Json,
         preparation_steps: preparationSteps as unknown as Json,
-      } as PageContentUpdate;
+      } as unknown as PageContentUpdate;
       
       // If we already have page content, update it
       if (pageContent) {
         const { error } = await supabase
           .from('page_content')
           .update(updateData)
-          .eq('id', pageContent.id);
+          .eq('id', pageContent.id as any);
           
         if (error) throw error;
       } 
       // Otherwise create new page content
       else {
-        const insertData = updateData as PageContentInsert;
+        const insertData = updateData as unknown as PageContentInsert;
         const { error } = await supabase
           .from('page_content')
-          .insert([insertData]);
+          .insert([insertData] as any);
           
         if (error) throw error;
       }
