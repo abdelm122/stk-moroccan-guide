@@ -56,7 +56,7 @@ export function EditAboutUsForm() {
         const { data, error } = await supabase
           .from("page_content")
           .select("*")
-          .eq("page_name", "uber-uns" as unknown as string)
+          .eq("page_name", "uber-uns")
           .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
@@ -97,14 +97,14 @@ export function EditAboutUsForm() {
       const { data: existing } = await supabase
         .from("page_content")
         .select("id")
-        .eq("page_name", "uber-uns" as unknown as string)
+        .eq("page_name", "uber-uns")
         .maybeSingle();
 
-      // Use proper typing for updateData
-      const updateData: PageContentUpdate = {
+      // Create update data with proper typing
+      const updateData = {
         ...values,
         updated_at: new Date().toISOString(),
-      };
+      } as PageContentUpdate;
 
       let result;
       if (existing && typeof existing === 'object' && 'id' in existing) {
@@ -114,11 +114,11 @@ export function EditAboutUsForm() {
           .update(updateData)
           .eq("id", existing.id);
       } else {
-        // Insert new content with the correct type
-        const insertData: PageContentInsert = {
+        // Insert new content with page_name
+        const insertData = {
           page_name: "uber-uns",
           ...values,
-        };
+        } as PageContentInsert;
         
         result = await supabase
           .from("page_content")
