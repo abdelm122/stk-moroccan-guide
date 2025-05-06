@@ -24,6 +24,33 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          name: string
+          size: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          name: string
+          size: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          name?: string
+          size?: number
+          type?: string
+        }
+        Relationships: []
+      }
       page_content: {
         Row: {
           created_at: string | null
@@ -36,6 +63,7 @@ export type Database = {
           page_name: string
           story: string | null
           updated_at: string | null
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -48,6 +76,7 @@ export type Database = {
           page_name: string
           story?: string | null
           updated_at?: string | null
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -60,6 +89,7 @@ export type Database = {
           page_name?: string
           story?: string | null
           updated_at?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }

@@ -7,8 +7,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+interface PageContent {
+  id: string;
+  page_name: string;
+  mission: string | null;
+  story: string | null;
+  creator_name: string | null;
+  creator_title: string | null;
+  creator_bio: string | null;
+  creator_image: string | null;
+  video_url: string | null;
+  updated_at: string | null;
+  created_at: string | null;
+}
+
 export function InformationEditor() {
-  const [pageContent, setPageContent] = useState<any>(null);
+  const [pageContent, setPageContent] = useState<PageContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     content: '',
@@ -35,7 +49,7 @@ export function InformationEditor() {
       }
       
       if (data) {
-        setPageContent(data);
+        setPageContent(data as PageContent);
         setFormData({
           content: data.story || '',
           title: data.mission || '',

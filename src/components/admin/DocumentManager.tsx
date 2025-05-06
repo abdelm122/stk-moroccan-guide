@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { download, file, trash } from "lucide-react";
+import { Download, File, Trash } from "lucide-react";
 
 interface Document {
   id: string;
@@ -39,7 +39,7 @@ export function DocumentManager() {
         
       if (error) throw error;
       
-      setDocuments(data || []);
+      setDocuments(data as Document[] || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast.error("Failed to load documents");
@@ -216,7 +216,7 @@ export function DocumentManager() {
             <p className="text-center py-4">Loading documents...</p>
           ) : documents.length === 0 ? (
             <div className="text-center py-8">
-              <file className="mx-auto h-12 w-12 text-gray-400" />
+              <File className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-lg font-medium">No documents uploaded yet</h3>
               <p className="mt-1 text-sm text-gray-500">Upload your first document above.</p>
             </div>
@@ -235,7 +235,7 @@ export function DocumentManager() {
                 {documents.map((doc) => (
                   <TableRow key={doc.id}>
                     <TableCell className="font-medium flex items-center gap-2">
-                      <file className="h-5 w-5" />
+                      <File className="h-5 w-5" />
                       {doc.name}
                     </TableCell>
                     <TableCell>
@@ -252,7 +252,7 @@ export function DocumentManager() {
                           rel="noopener noreferrer"
                         >
                           <Button size="icon" variant="outline">
-                            <download className="h-4 w-4" />
+                            <Download className="h-4 w-4" />
                           </Button>
                         </a>
                         <Button 
@@ -260,7 +260,7 @@ export function DocumentManager() {
                           variant="destructive"
                           onClick={() => handleDelete(doc.id, doc.file_path)}
                         >
-                          <trash className="h-4 w-4" />
+                          <Trash className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
