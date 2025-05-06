@@ -36,7 +36,7 @@ export function DocumentManager() {
       if (error) throw error;
       
       // Use type assertion to ensure correct type
-      setDocuments(data || []);
+      setDocuments(data as DocumentRow[]);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast.error("Failed to load documents");
@@ -95,7 +95,7 @@ export function DocumentManager() {
       // Insert the document record
       const { error: insertError } = await supabase
         .from('documents')
-        .insert(documentToInsert);
+        .insert([documentToInsert]);
         
       if (insertError) throw insertError;
       
@@ -125,7 +125,7 @@ export function DocumentManager() {
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id);
+        .eq('id', id as unknown as string);
         
       if (dbError) throw dbError;
       

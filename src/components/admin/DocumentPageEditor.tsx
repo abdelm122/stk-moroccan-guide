@@ -58,7 +58,7 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen' as any)
+        .eq('page_name', 'unterlagen' as unknown as string)
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
@@ -180,7 +180,7 @@ export function DocumentPageEditor() {
         const { error } = await supabase
           .from('page_content')
           .update(updateData)
-          .eq('id', pageContent.id);
+          .eq('id', pageContent.id as unknown as string);
           
         if (error) throw error;
       } 
