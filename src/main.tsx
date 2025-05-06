@@ -4,8 +4,8 @@ import { StrictMode } from 'react'
 import App from './App.tsx'
 import './index.css'
 
-// Wait for full DOM load and handle errors gracefully
-document.addEventListener('DOMContentLoaded', () => {
+// Function to initialize the React application with comprehensive error handling
+const initializeApp = () => {
   try {
     const rootElement = document.getElementById("root");
     
@@ -32,4 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show user-friendly error
     document.body.innerHTML = '<div style="padding: 20px; color: red; text-align: center;">Application encountered an error. Please refresh the page or contact support.</div>';
   }
-});
+};
+
+// Wait for full DOM load to prevent race conditions
+if (document.readyState === "loading") {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  // DOM already loaded, initialize immediately
+  initializeApp();
+}
