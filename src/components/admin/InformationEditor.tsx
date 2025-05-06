@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,8 @@ export function InformationEditor() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     content: '',
-    title: ''
+    title: '',
+    video_url: ''
   });
 
   useEffect(() => {
@@ -36,7 +38,8 @@ export function InformationEditor() {
         setPageContent(data);
         setFormData({
           content: data.story || '',
-          title: data.mission || ''
+          title: data.mission || '',
+          video_url: data.video_url || ''
         });
       }
     } catch (error) {
@@ -57,7 +60,8 @@ export function InformationEditor() {
     try {
       const updateData = {
         mission: formData.title,
-        story: formData.content
+        story: formData.content,
+        video_url: formData.video_url
       };
       
       // If we already have page content, update it
@@ -87,6 +91,19 @@ export function InformationEditor() {
       console.error("Error updating page content:", error);
       toast.error(error.message || "Failed to update information page content");
     }
+  };
+
+  const isYoutubeUrl = (url: string): boolean => {
+    if (!url) return true; // Empty URL is valid (not required)
+    const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})$/;
+    return pattern.test(url);
+  };
+
+  const extractVideoId = (url: string): string => {
+    if (!url) return '';
+    const pattern = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const matches = url.match(pattern);
+    return matches ? matches[1] : '';
   };
 
   return (
@@ -123,6 +140,40 @@ export function InformationEditor() {
               <p className="text-xs text-gray-500">
                 You can use markdown formatting for rich text content.
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="video_url" className="text-sm font-medium">YouTube Video URL</label>
+              <Input
+                id="video_url"
+                name="video_url"
+                value={formData.video_url}
+                onChange={handleChange}
+                placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)"
+              />
+              <p className="text-xs text-gray-500">
+                Paste a YouTube video URL to embed it on the information page.
+              </p>
+              
+              {formData.video_url && !isYoutubeUrl(formData.video_url) && (
+                <p className="text-xs text-red-500">
+                  Please enter a valid YouTube URL
+                </p>
+              )}
+
+              {formData.video_url && isYoutubeUrl(formData.video_url) && (
+                <div className="mt-4 border rounded overflow-hidden">
+                  <div className="aspect-w-16 aspect-h-9 bg-gray-100">
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${extractVideoId(formData.video_url)}`}
+                      title="YouTube video preview"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="flex justify-end">

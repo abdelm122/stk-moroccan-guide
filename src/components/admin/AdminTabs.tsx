@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditAboutUsForm } from "./EditAboutUsForm";
 import { UniversityManager } from "./UniversityManager";
 import { InformationEditor } from "./InformationEditor";
+import { DocumentManager } from "./DocumentManager";
 
 export function AdminTabs() {
   return (
@@ -38,9 +39,9 @@ export function AdminTabs() {
       <TabsContent value="documents">
         <h2 className="text-2xl font-bold mb-4">Manage Documents</h2>
         <p className="text-muted-foreground mb-6">
-          Update document requirements and templates.
+          Upload document requirements and templates for users to download.
         </p>
-        {/* Document management content will go here */}
+        <DocumentManager />
       </TabsContent>
     </Tabs>
   );
