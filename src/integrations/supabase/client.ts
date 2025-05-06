@@ -36,3 +36,72 @@ export const isAuthenticated = async () => {
   const { data } = await supabase.auth.getSession();
   return !!data.session;
 };
+
+// Add admin authentication helper
+export const isAdmin = async () => {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return false;
+  
+  // Check if user exists in admins table
+  const { data: adminData, error } = await supabase
+    .from('admins')
+    .select('username')
+    .single();
+  
+  if (error || !adminData) {
+    console.error("Admin check error:", error);
+    return false;
+  }
+  
+  return true;
+};
+
+// Admin login function
+export const adminLogin = async (username: string, password: string) => {
+  // First check if the credentials match an entry in the admins table
+  const { data: adminData, error: adminError } = await supabase
+    .from('admins')
+    .select('username')
+    .eq('username', username)
+    .eq('password', password) // Note: In production, you should use hashed passwords
+    .single();
+  
+  if (adminError || !adminData) {
+    console.error("Admin authentication failed:", adminError);
+    return { error: "Invalid admin credentials" };
+  }
+  
+  // If admin exists in the table, sign in (or create an account if needed)
+  // The JWT will contain the username claim needed for RLS policies
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: `${username}@admin.stkcommunity.de`, // Use a consistent email format
+    password: password,
+  });
+  
+  if (error) {
+    // If the account doesn't exist yet, try to create it
+    if (error.message.includes('Invalid login credentials')) {
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: `${username}@admin.stkcommunity.de`,
+        password: password,
+        options: {
+          data: {
+            username: username, // Store username in user metadata for JWT claims
+            role: 'admin'
+          }
+        }
+      });
+      
+      if (signUpError) {
+        console.error("Admin account creation failed:", signUpError);
+        return { error: "Failed to create admin account" };
+      }
+      
+      return { data: signUpData };
+    }
+    
+    return { error: error.message };
+  }
+  
+  return { data };
+};
