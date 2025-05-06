@@ -11,14 +11,9 @@ import Informationen from "./pages/Informationen";
 import Unterlagen from "./pages/Unterlagen";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
-
-// This will be replaced with actual Supabase config once integrated
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-// const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

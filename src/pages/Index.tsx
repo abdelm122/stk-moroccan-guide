@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Search } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { Search, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [universities, setUniversities] = useState([]);
@@ -18,74 +19,81 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now we'll use this seed data, but will replace with Supabase once integrated
-    const seedData = [
-      {
-        id: 1,
-        name: "Heidelberg",
-        registration: "التسجيل أونلاين",
-        level: "B2",
-        bewerbung_ws: "1 Mai bis 30 Juni",
-        bewerbung_ss: "November bis 15 Dezember",
-        aufnahme_ws: "9/10",
-        aufnahme_ss: "8/4",
-        adresse: "Im Neuenheimer Feld 684, 69120 Heidelberg",
-        email: "studienkolleg@uni-heidelberg.de",
-        photo_url: "https://images.unsplash.com/photo-1522661067900-ab829854a57f",
-        more_info: "https://www.isz.uni-heidelberg.de/e_index.html"
-      },
-      {
-        id: 2,
-        name: "Karlsruhe institut",
-        registration: "التسجيل اونلاين",
-        level: "B1",
-        bewerbung_ws: "bis 15 Juli",
-        bewerbung_ss: "bis 15 Januar",
-        aufnahme_ws: "Anfang September",
-        aufnahme_ss: "Anfang Februar",
-        adresse: "Adenauerring 2, 76131 Karlsruhe",
-        email: "studienkolleg@kit.edu",
-        photo_url: "https://images.unsplash.com/photo-1562774053-701939374585",
-        more_info: "https://www.stk.kit.edu/"
-      },
-      {
-        id: 3,
-        name: "Studienkolleg bei den Universitäten des Freistaates Bayern",
-        registration: "التسجيل يكون على إحدى جامعات الولاية",
-        level: "B2",
-        bewerbung_ws: "bis 15 Juli",
-        bewerbung_ss: "bis 15 Februar",
-        aufnahme_ws: "2/9",
-        aufnahme_ss: "5/2",
-        adresse: "Landshuter Str. 22, 93047 Regensburg",
-        email: "info@studienkolleg.bayern",
-        photo_url: "https://images.unsplash.com/photo-1592853598064-0029ebd8de92",
-        more_info: "https://www.studienkolleg.bayern.de/"
+    const fetchUniversities = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch data from Supabase
+        const { data, error } = await supabase
+          .from('universities')
+          .select(`
+            id,
+            name,
+            image_url,
+            type,
+            description,
+            location,
+            university_details (
+              language_requirements,
+              application_method,
+              application_deadline,
+              application_test_date,
+              address,
+              email,
+              website_url,
+              bundesland,
+              status,
+              kurse
+            )
+          `);
+        
+        if (error) {
+          console.error('Error fetching data:', error);
+          toast({
+            title: "Error fetching universities",
+            description: error.message,
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Transform data to match the format expected by the UI
+        const transformedData = data.map(uni => ({
+          id: uni.id,
+          name: uni.name,
+          registration: uni.university_details?.[0]?.application_method || "Information not available",
+          level: uni.university_details?.[0]?.language_requirements || "B2",
+          bewerbung_ws: uni.university_details?.[0]?.application_deadline?.split(',')[0] || "Not specified",
+          bewerbung_ss: uni.university_details?.[0]?.application_deadline?.split(',')[1] || "Not specified",
+          aufnahme_ws: uni.university_details?.[0]?.application_test_date?.split(',')[0] || "Not specified",
+          aufnahme_ss: uni.university_details?.[0]?.application_test_date?.split(',')[1] || "Not specified",
+          adresse: uni.university_details?.[0]?.address || "Address not available",
+          email: uni.university_details?.[0]?.email || "Email not available",
+          photo_url: uni.image_url || "https://images.unsplash.com/photo-1592853598064-0029ebd8de92",
+          more_info: uni.university_details?.[0]?.website_url || "#"
+        }));
+        
+        console.log("Fetched universities:", transformedData);
+        setUniversities(transformedData);
+        setFilteredUniversities(transformedData);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        toast({
+          title: "Failed to load data",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
     
-    setUniversities(seedData);
-    setFilteredUniversities(seedData);
-    setLoading(false);
-    
-    // This will be replaced with actual Supabase fetch once integrated
-    // const fetchUniversities = async () => {
-    //   const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
-    //   const { data, error } = await supabase.from('universities').select('*');
-    //   if (error) {
-    //     console.error('Error fetching data:', error);
-    //     return;
-    //   }
-    //   setUniversities(data);
-    //   setFilteredUniversities(data);
-    //   setLoading(false);
-    // };
-    // fetchUniversities();
+    fetchUniversities();
   }, []);
 
   useEffect(() => {
     filterUniversities();
-  }, [searchTerm, b1Filter, b2Filter]);
+  }, [searchTerm, b1Filter, b2Filter, universities]);
 
   const filterUniversities = () => {
     let filtered = universities;
@@ -110,6 +118,11 @@ const Index = () => {
     setFilteredUniversities(filtered);
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    filterUniversities();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
@@ -121,7 +134,7 @@ const Index = () => {
               Your complete guide to Studienkollegs in Germany for Moroccan students
             </p>
             <div className="w-full max-w-lg">
-              <div className="flex flex-col md:flex-row gap-4">
+              <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <Input
@@ -131,8 +144,8 @@ const Index = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Button variant="secondary" className="stk-btn-secondary">Search</Button>
-              </div>
+                <Button type="submit" variant="secondary" className="stk-btn-secondary">Search</Button>
+              </form>
               <div className="flex items-center gap-6 mt-4 justify-center">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
@@ -161,19 +174,9 @@ const Index = () => {
         <h2 className="text-3xl font-bold mb-8">Available Studienkollegs</h2>
         
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="animate-pulse">
-                <div className="h-48 bg-gray-200"></div>
-                <CardHeader>
-                  <div className="h-6 w-3/4 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-1/2 bg-gray-200 rounded mt-2"></div>
-                </CardHeader>
-                <CardFooter>
-                  <div className="h-10 w-full bg-gray-200 rounded"></div>
-                </CardFooter>
-              </Card>
-            ))}
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-lg text-gray-600">Loading universities...</p>
           </div>
         ) : filteredUniversities.length === 0 ? (
           <div className="text-center py-10">
