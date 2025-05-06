@@ -35,6 +35,7 @@ export function DocumentManager() {
         
       if (error) throw error;
       
+      // Use type assertion to ensure correct type
       setDocuments(data || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -83,7 +84,6 @@ export function DocumentManager() {
       
       const publicUrl = publicUrlData.publicUrl;
       
-      // Add record to the documents table
       // Create a document object that matches the DocumentInsert type
       const documentToInsert: DocumentInsert = {
         name: documentName,
@@ -92,6 +92,7 @@ export function DocumentManager() {
         type: selectedFile.type
       };
 
+      // Insert the document record
       const { error: insertError } = await supabase
         .from('documents')
         .insert(documentToInsert);
@@ -120,11 +121,11 @@ export function DocumentManager() {
         
       if (storageError) throw storageError;
       
-      // Delete the record from the documents table
+      // Delete the record from the documents table using eq instead of direct comparison
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id as any);
+        .eq('id', id);
         
       if (dbError) throw dbError;
       
