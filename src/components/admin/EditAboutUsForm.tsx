@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -52,15 +51,13 @@ export function EditAboutUsForm() {
     async function fetchContent() {
       setIsLoading(true);
       try {
-        // We need to use the typed fetch to properly handle the response
         const { data, error } = await supabase
           .from("page_content")
           .select("*")
-          .eq("page_name", "uber-uns" as any)
+          .eq("page_name", "uber-uns" as unknown as any)
           .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
-          // PGRST116 means not found
           throw error;
         }
 
@@ -69,7 +66,7 @@ export function EditAboutUsForm() {
           // Store the full content object for later use
           setExistingContent(data as PageContent);
           
-          // Reset form with existing data
+          // Reset form with existing data, safely handling potential null values
           form.reset({
             mission: data.mission || "",
             story: data.story || "",
@@ -97,32 +94,32 @@ export function EditAboutUsForm() {
       const { data: existing } = await supabase
         .from("page_content")
         .select("id")
-        .eq("page_name", "uber-uns" as any)
+        .eq("page_name", "uber-uns" as unknown as any)
         .maybeSingle();
 
       // Create update data with proper typing
-      const updateData = {
+      const updateData: PageContentUpdate = {
         ...values,
         updated_at: new Date().toISOString(),
-      } as unknown as PageContentUpdate;
+      };
 
       let result;
       if (existing && typeof existing === 'object' && 'id' in existing) {
         // Update existing content
         result = await supabase
           .from("page_content")
-          .update(updateData)
-          .eq("id", existing.id);
+          .update(updateData as unknown as any)
+          .eq("id", existing.id as unknown as any);
       } else {
         // Insert new content with page_name
-        const insertData = {
+        const insertData: PageContentInsert = {
           page_name: "uber-uns",
           ...values,
-        } as unknown as PageContentInsert;
+        };
         
         result = await supabase
           .from("page_content")
-          .insert([insertData] as any);
+          .insert(insertData as unknown as any);
       }
 
       if (result.error) throw result.error;

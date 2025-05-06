@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen' as any)
+        .eq('page_name', 'unterlagen' as unknown as any)
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
@@ -176,27 +177,31 @@ export function DocumentPageEditor() {
     e.preventDefault();
     try {
       // Prepare the update data with proper types
-      const updateData = {
+      const updateData: PageContentUpdate = {
         page_name: 'unterlagen',
         faqs: faqs as unknown as Json,
         preparation_steps: preparationSteps as unknown as Json,
-      } as unknown as PageContentUpdate;
+      };
       
       // If we already have page content, update it
       if (pageContent) {
         const { error } = await supabase
           .from('page_content')
-          .update(updateData)
-          .eq('id', pageContent.id as any);
+          .update(updateData as unknown as any)
+          .eq('id', pageContent.id as unknown as any);
           
         if (error) throw error;
       } 
       // Otherwise create new page content
       else {
-        const insertData = updateData as unknown as PageContentInsert;
+        const insertData: PageContentInsert = {
+          page_name: 'unterlagen',
+          faqs: faqs as unknown as Json,
+          preparation_steps: preparationSteps as unknown as Json
+        };
         const { error } = await supabase
           .from('page_content')
-          .insert([insertData] as any);
+          .insert(insertData as unknown as any);
           
         if (error) throw error;
       }

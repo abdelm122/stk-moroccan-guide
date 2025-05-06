@@ -15,6 +15,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type UniversityRow = Database['public']['Tables']['universities']['Row'];
+type UniversityUpdate = Database['public']['Tables']['universities']['Update'];
+type UniversityDetailRow = Database['public']['Tables']['university_details']['Row'];
+type UniversityDetailUpdate = Database['public']['Tables']['university_details']['Update'];
 
 export function UniversityManager() {
   const [universities, setUniversities] = useState<any[]>([]);
@@ -67,7 +73,7 @@ export function UniversityManager() {
     e.preventDefault();
     try {
       // Separate the university and university_details fields
-      const universityFields = {
+      const universityFields: UniversityUpdate = {
         name: formData.name,
         description: formData.description,
         location: formData.location,
@@ -75,7 +81,7 @@ export function UniversityManager() {
         image_url: formData.image_url
       };
       
-      const detailsFields = {
+      const detailsFields: UniversityDetailUpdate = {
         address: formData.address,
         email: formData.email,
         website_url: formData.website_url,
@@ -91,7 +97,7 @@ export function UniversityManager() {
       // Update university table
       const { error: universityError } = await supabase
         .from('universities')
-        .update(universityFields)
+        .update(universityFields as unknown as any)
         .eq('id', selectedUniversity.id);
         
       if (universityError) throw universityError;
@@ -99,7 +105,7 @@ export function UniversityManager() {
       // Update university_details table
       const { error: detailsError } = await supabase
         .from('university_details')
-        .update(detailsFields)
+        .update(detailsFields as unknown as any)
         .eq('university_id', selectedUniversity.id);
         
       if (detailsError) throw detailsError;

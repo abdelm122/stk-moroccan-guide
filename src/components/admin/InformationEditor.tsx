@@ -6,6 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type PageContentRow = Database['public']['Tables']['page_content']['Row'];
+type PageContentUpdate = Database['public']['Tables']['page_content']['Update'];
+type PageContentInsert = Database['public']['Tables']['page_content']['Insert'];
 
 interface PageContent {
   id: string;
@@ -40,20 +45,22 @@ export function InformationEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'informationen')
-        .single();
+        .eq('page_name', 'informationen' as unknown as any)
+        .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
         // PGRST116 is "no rows returned" error, which just means we need to create initial content
         throw error;
       }
       
-      if (data) {
-        setPageContent(data as PageContent);
+      if (data && typeof data === 'object') {
+        // Use safe type casting
+        const typedData = data as unknown as PageContentRow;
+        setPageContent(typedData as unknown as PageContent);
         setFormData({
-          content: data.story || '',
-          title: data.mission || '',
-          video_url: data.video_url || ''
+          content: typedData.story || '',
+          title: typedData.mission || '',
+          video_url: typedData.video_url || ''
         });
       }
     } catch (error) {
@@ -72,7 +79,7 @@ export function InformationEditor() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updateData = {
+      const updateData: PageContentUpdate = {
         mission: formData.title,
         story: formData.content,
         video_url: formData.video_url
@@ -82,19 +89,21 @@ export function InformationEditor() {
       if (pageContent) {
         const { error } = await supabase
           .from('page_content')
-          .update(updateData)
-          .eq('id', pageContent.id);
+          .update(updateData as unknown as any)
+          .eq('id', pageContent.id as unknown as any);
           
         if (error) throw error;
       } 
       // Otherwise create new page content
       else {
+        const insertData: PageContentInsert = {
+          page_name: 'informationen',
+          ...updateData
+        };
+        
         const { error } = await supabase
           .from('page_content')
-          .insert([{
-            page_name: 'informationen',
-            ...updateData
-          }]);
+          .insert(insertData as unknown as any);
           
         if (error) throw error;
       }
