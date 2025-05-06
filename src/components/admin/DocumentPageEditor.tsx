@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -63,12 +62,16 @@ export function DocumentPageEditor() {
       }
       
       if (data) {
+        // Parse the JSON data with proper type safety
+        const parsedFaqs = data.faqs ? (data.faqs as any[] as FAQItem[]) : null;
+        const parsedSteps = data.preparation_steps ? (data.preparation_steps as any[] as PreparationStep[]) : null;
+        
         // Make sure we handle the data correctly based on our interface
         setPageContent({
           id: data.id,
           page_name: data.page_name,
-          faqs: data.faqs as FAQItem[] | null,
-          preparation_steps: data.preparation_steps as PreparationStep[] | null,
+          faqs: parsedFaqs,
+          preparation_steps: parsedSteps,
           updated_at: data.updated_at,
           created_at: data.created_at,
           mission: data.mission,
@@ -79,8 +82,10 @@ export function DocumentPageEditor() {
           creator_image: data.creator_image,
           video_url: data.video_url
         });
-        setFaqs(data.faqs ? (data.faqs as FAQItem[]) : [{ question: "", answer: "" }]);
-        setPreparationSteps(data.preparation_steps ? (data.preparation_steps as PreparationStep[]) : [{ title: "", description: "", required_items: [""] }]);
+        
+        // Initialize state with parsed data or default values
+        setFaqs(parsedFaqs || [{ question: "", answer: "" }]);
+        setPreparationSteps(parsedSteps || [{ title: "", description: "", required_items: [""] }]);
       } else {
         // Initialize with empty arrays if no data exists
         setFaqs([{ question: "", answer: "" }]);
@@ -164,8 +169,8 @@ export function DocumentPageEditor() {
     try {
       const updateData = {
         page_name: 'unterlagen',
-        faqs: faqs as Json,
-        preparation_steps: preparationSteps as Json,
+        faqs: faqs as unknown as Json,
+        preparation_steps: preparationSteps as unknown as Json,
       };
       
       // If we already have page content, update it
