@@ -8,15 +8,17 @@ import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Download, File, Trash } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
-interface Document {
+// Define a type that matches the documents table structure
+type Document = {
   id: string;
   name: string;
   file_path: string;
   created_at: string;
   size: number;
   type: string;
-}
+};
 
 export function DocumentManager() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -39,7 +41,8 @@ export function DocumentManager() {
         
       if (error) throw error;
       
-      setDocuments(data as Document[] || []);
+      // Cast the data to our Document type
+      setDocuments((data || []) as Document[]);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast.error("Failed to load documents");
@@ -90,12 +93,12 @@ export function DocumentManager() {
       // Add record to the documents table
       const { error: insertError } = await supabase
         .from('documents')
-        .insert([{
+        .insert({
           name: documentName,
           file_path: filePath,
           size: selectedFile.size,
           type: selectedFile.type
-        }]);
+        });
         
       if (insertError) throw insertError;
       

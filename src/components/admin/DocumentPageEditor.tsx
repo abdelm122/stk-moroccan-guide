@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export function DocumentPageEditor() {
         .from('page_content')
         .select('*')
         .eq('page_name', 'unterlagen')
-        .single();
+        .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
         throw error;
@@ -63,8 +64,8 @@ export function DocumentPageEditor() {
       
       if (data) {
         // Parse the JSON data with proper type safety
-        const parsedFaqs = data.faqs ? (data.faqs as any[] as FAQItem[]) : null;
-        const parsedSteps = data.preparation_steps ? (data.preparation_steps as any[] as PreparationStep[]) : null;
+        const parsedFaqs = data.faqs ? (data.faqs as unknown as FAQItem[]) : null;
+        const parsedSteps = data.preparation_steps ? (data.preparation_steps as unknown as PreparationStep[]) : null;
         
         // Make sure we handle the data correctly based on our interface
         setPageContent({
