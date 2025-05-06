@@ -196,26 +196,28 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUniversities.map((uni) => (
               <Link to={`/uni/${uni.id}`} key={uni.id} className="stk-card group">
-                <div className="h-48 bg-gray-100 overflow-hidden">
-                  <img 
-                    src={uni.photo_url} 
-                    alt={uni.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle>{uni.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${uni.level === "B1" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>
-                      {uni.level}
-                    </span>
-                    <span className="arabic text-gray-600">{uni.registration}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter className="flex justify-between">
-                  <p className="text-sm text-gray-600">{uni.bewerbung_ws}</p>
-                  <Button variant="ghost" className="hover:bg-accent">View Details</Button>
-                </CardFooter>
+                <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
+                  <div className="h-48 bg-gray-100 overflow-hidden">
+                    <img 
+                      src={uni.photo_url} 
+                      alt={uni.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <CardHeader>
+                    <CardTitle>{uni.name}</CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${uni.level === "B1" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>
+                        {uni.level}
+                      </span>
+                      <span className="arabic text-gray-600">{uni.registration}</span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardFooter className="flex justify-between mt-auto">
+                    <p className="text-sm text-gray-600">{uni.bewerbung_ws}</p>
+                    <Button variant="ghost" className="hover:bg-accent">View Details</Button>
+                  </CardFooter>
+                </Card>
               </Link>
             ))}
           </div>

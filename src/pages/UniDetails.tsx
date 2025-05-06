@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Mail, Globe, MapPin, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Mail, Globe, MapPin, Calendar, User, Loader2 } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const UniDetails = () => {
   const { id } = useParams();
@@ -11,92 +13,94 @@ const UniDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now we'll use this seed data, but will replace with Supabase once integrated
-    const seedData = [
-      {
-        id: 1,
-        name: "Heidelberg",
-        registration: "التسجيل أونلاين",
-        level: "B2",
-        bewerbung_ws: "1 Mai bis 30 Juni",
-        bewerbung_ss: "November bis 15 Dezember",
-        aufnahme_ws: "9/10",
-        aufnahme_ss: "8/4",
-        adresse: "Im Neuenheimer Feld 684, 69120 Heidelberg",
-        email: "studienkolleg@uni-heidelberg.de",
-        photo_url: "https://images.unsplash.com/photo-1522661067900-ab829854a57f",
-        more_info: "https://www.isz.uni-heidelberg.de/e_index.html"
-      },
-      {
-        id: 2,
-        name: "Karlsruhe institut",
-        registration: "التسجيل اونلاين",
-        level: "B1",
-        bewerbung_ws: "bis 15 Juli",
-        bewerbung_ss: "bis 15 Januar",
-        aufnahme_ws: "Anfang September",
-        aufnahme_ss: "Anfang Februar",
-        adresse: "Adenauerring 2, 76131 Karlsruhe",
-        email: "studienkolleg@kit.edu",
-        photo_url: "https://images.unsplash.com/photo-1562774053-701939374585",
-        more_info: "https://www.stk.kit.edu/"
-      },
-      {
-        id: 3,
-        name: "Studienkolleg bei den Universitäten des Freistaates Bayern",
-        registration: "التسجيل يكون على إحدى جامعات الولاية",
-        level: "B2",
-        bewerbung_ws: "bis 15 Juli",
-        bewerbung_ss: "bis 15 Februar",
-        aufnahme_ws: "2/9",
-        aufnahme_ss: "5/2",
-        adresse: "Landshuter Str. 22, 93047 Regensburg",
-        email: "info@studienkolleg.bayern",
-        photo_url: "https://images.unsplash.com/photo-1592853598064-0029ebd8de92",
-        more_info: "https://www.studienkolleg.bayern.de/"
+    const fetchUniversityDetails = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch university data from Supabase
+        const { data, error } = await supabase
+          .from('universities')
+          .select(`
+            id,
+            name,
+            image_url,
+            type,
+            description,
+            location,
+            university_details (
+              language_requirements,
+              application_method,
+              application_deadline,
+              application_test_date,
+              address,
+              email,
+              website_url,
+              bundesland,
+              status,
+              kurse
+            )
+          `)
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching university details:', error);
+          toast({
+            title: "Error fetching university details",
+            description: error.message,
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+        
+        if (!data) {
+          console.log("No university found with ID:", id);
+          setLoading(false);
+          return;
+        }
+        
+        // Transform data
+        const transformedData = {
+          id: data.id,
+          name: data.name,
+          registration: data.university_details?.[0]?.application_method || "Information not available",
+          level: data.university_details?.[0]?.language_requirements || "B2",
+          bewerbung_ws: data.university_details?.[0]?.application_deadline?.split(',')[0] || "Not specified",
+          bewerbung_ss: data.university_details?.[0]?.application_deadline?.split(',')[1] || "Not specified",
+          aufnahme_ws: data.university_details?.[0]?.application_test_date?.split(',')[0] || "Not specified",
+          aufnahme_ss: data.university_details?.[0]?.application_test_date?.split(',')[1] || "Not specified",
+          adresse: data.university_details?.[0]?.address || "Address not available",
+          email: data.university_details?.[0]?.email || "Email not available",
+          photo_url: data.image_url || "https://images.unsplash.com/photo-1592853598064-0029ebd8de92",
+          more_info: data.university_details?.[0]?.website_url || "#"
+        };
+        
+        console.log("Fetched university details:", transformedData);
+        setUniversity(transformedData);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        toast({
+          title: "Failed to load university details",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
     
-    const foundUniversity = seedData.find(uni => uni.id === parseInt(id));
-    
-    if (foundUniversity) {
-      setUniversity(foundUniversity);
+    if (id) {
+      fetchUniversityDetails();
     }
-    
-    setLoading(false);
-    
-    // This will be replaced with actual Supabase fetch once integrated
-    // const fetchUniversity = async () => {
-    //   const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
-    //   const { data, error } = await supabase
-    //     .from('universities')
-    //     .select('*')
-    //     .eq('id', id)
-    //     .single();
-    //   
-    //   if (error) {
-    //     console.error('Error fetching university:', error);
-    //     return;
-    //   }
-    //   
-    //   setUniversity(data);
-    //   setLoading(false);
-    // };
-    // 
-    // fetchUniversity();
   }, [id]);
 
   if (loading) {
     return (
       <div className="stk-container py-16">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 w-1/2 mb-4 rounded"></div>
-          <div className="h-64 bg-gray-200 mb-6 rounded"></div>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-6 bg-gray-200 rounded w-full"></div>
-            ))}
-          </div>
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+          <p className="text-lg text-gray-600">Loading university details...</p>
         </div>
       </div>
     );
