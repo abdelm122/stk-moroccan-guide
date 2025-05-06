@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,14 +10,6 @@ import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { X, Plus, Save } from "lucide-react";
 
-interface DocumentPageContent {
-  id: string;
-  page_name: string;
-  faqs: FAQItem[] | null;
-  preparation_steps: PreparationStep[] | null;
-  updated_at: string | null;
-}
-
 interface FAQItem {
   question: string;
   answer: string;
@@ -26,6 +19,14 @@ interface PreparationStep {
   title: string;
   description: string;
   required_items?: string[];
+}
+
+interface DocumentPageContent {
+  id: string;
+  page_name: string;
+  faqs: FAQItem[] | null;
+  preparation_steps: PreparationStep[] | null;
+  updated_at: string | null;
 }
 
 export function DocumentPageEditor() {
@@ -53,7 +54,14 @@ export function DocumentPageEditor() {
       }
       
       if (data) {
-        setPageContent(data as DocumentPageContent);
+        // Make sure we handle the data correctly based on our interface
+        setPageContent({
+          id: data.id,
+          page_name: data.page_name,
+          faqs: data.faqs || [],
+          preparation_steps: data.preparation_steps || [],
+          updated_at: data.updated_at
+        });
         setFaqs(data.faqs || []);
         setPreparationSteps(data.preparation_steps || []);
       } else {

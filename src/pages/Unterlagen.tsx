@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Document {
-  id: number;
+  id: string | number; // Allow both string and number to accommodate different data sources
   title: string;
   description: string;
   file_url: string;
@@ -81,7 +81,7 @@ const Unterlagen = () => {
 
       // Combine with seed data
       const seedData = getSeedData();
-      const allDocuments = [...formattedDocs, ...seedData];
+      const allDocuments = [...formattedDocs, ...seedData] as Document[];
       
       setDocuments(allDocuments);
       setFilteredDocuments(allDocuments);
@@ -205,6 +205,30 @@ const Unterlagen = () => {
         file_url: "",
         visible: true,
         category: "essential"
+      },
+      {
+        id: 9,
+        title: "Motivation Letter Template",
+        description: "Professional template for writing your motivation letter when applying to German universities",
+        file_url: "",
+        visible: true,
+        category: "templates"
+      },
+      {
+        id: 10, 
+        title: "CV/Resume Template",
+        description: "Europass CV template formatted specifically for German academic applications",
+        file_url: "",
+        visible: true,
+        category: "templates"
+      },
+      {
+        id: 11,
+        title: "Health Insurance Guide",
+        description: "Complete guide to health insurance requirements and options for international students",
+        file_url: "",
+        visible: true,
+        category: "reference"
       }
     ];
   };
