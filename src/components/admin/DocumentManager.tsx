@@ -10,18 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { Download, File, Trash } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 
-// Define a type that matches the documents table structure
-type Document = {
-  id: string;
-  name: string;
-  file_path: string;
-  created_at: string;
-  size: number;
-  type: string;
-};
+// Define a type that matches the documents table structure using the generated types
+type DocumentRow = Database['public']['Tables']['documents']['Row'];
+type DocumentInsert = Database['public']['Tables']['documents']['Insert'];
 
 export function DocumentManager() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [documentName, setDocumentName] = useState('');
@@ -41,8 +35,7 @@ export function DocumentManager() {
         
       if (error) throw error;
       
-      // Cast the data to our Document type
-      setDocuments((data || []) as Document[]);
+      setDocuments(data || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast.error("Failed to load documents");
@@ -91,14 +84,17 @@ export function DocumentManager() {
       const publicUrl = publicUrlData.publicUrl;
       
       // Add record to the documents table
+      // Create a document object that matches the DocumentInsert type
+      const documentToInsert: DocumentInsert = {
+        name: documentName,
+        file_path: filePath,
+        size: selectedFile.size,
+        type: selectedFile.type
+      };
+
       const { error: insertError } = await supabase
         .from('documents')
-        .insert({
-          name: documentName,
-          file_path: filePath,
-          size: selectedFile.size,
-          type: selectedFile.type
-        });
+        .insert(documentToInsert);
         
       if (insertError) throw insertError;
       
@@ -128,7 +124,7 @@ export function DocumentManager() {
       const { error: dbError } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id);
+        .eq('id', id as any);
         
       if (dbError) throw dbError;
       

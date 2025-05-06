@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { X, Plus, Save } from "lucide-react";
-import { Json } from "@/integrations/supabase/types";
+import { Database } from "@/integrations/supabase/types";
+
+type PageContentRow = Database['public']['Tables']['page_content']['Row'];
+type PageContentInsert = Database['public']['Tables']['page_content']['Insert'];
 
 interface FAQItem {
   question: string;
@@ -55,7 +58,7 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen')
+        .eq('page_name' as any, 'unterlagen')
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
@@ -63,16 +66,12 @@ export function DocumentPageEditor() {
       }
       
       if (data) {
-        // Parse the JSON data with proper type safety
-        const parsedFaqs = data.faqs ? (data.faqs as unknown as FAQItem[]) : null;
-        const parsedSteps = data.preparation_steps ? (data.preparation_steps as unknown as PreparationStep[]) : null;
-        
-        // Make sure we handle the data correctly based on our interface
-        setPageContent({
+        // Create a properly typed document page content object
+        const content: DocumentPageContent = {
           id: data.id,
           page_name: data.page_name,
-          faqs: parsedFaqs,
-          preparation_steps: parsedSteps,
+          faqs: data.faqs as unknown as FAQItem[] | null,
+          preparation_steps: data.preparation_steps as unknown as PreparationStep[] | null,
           updated_at: data.updated_at,
           created_at: data.created_at,
           mission: data.mission,
@@ -82,11 +81,13 @@ export function DocumentPageEditor() {
           creator_bio: data.creator_bio,
           creator_image: data.creator_image,
           video_url: data.video_url
-        });
+        };
+        
+        setPageContent(content);
         
         // Initialize state with parsed data or default values
-        setFaqs(parsedFaqs || [{ question: "", answer: "" }]);
-        setPreparationSteps(parsedSteps || [{ title: "", description: "", required_items: [""] }]);
+        setFaqs(content.faqs || [{ question: "", answer: "" }]);
+        setPreparationSteps(content.preparation_steps || [{ title: "", description: "", required_items: [""] }]);
       } else {
         // Initialize with empty arrays if no data exists
         setFaqs([{ question: "", answer: "" }]);
@@ -168,10 +169,10 @@ export function DocumentPageEditor() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updateData = {
+      const updateData: PageContentInsert = {
         page_name: 'unterlagen',
-        faqs: faqs as unknown as Json,
-        preparation_steps: preparationSteps as unknown as Json,
+        faqs: faqs as any,
+        preparation_steps: preparationSteps as any,
       };
       
       // If we already have page content, update it
@@ -179,7 +180,7 @@ export function DocumentPageEditor() {
         const { error } = await supabase
           .from('page_content')
           .update(updateData)
-          .eq('id', pageContent.id);
+          .eq('id', pageContent.id as any);
           
         if (error) throw error;
       } 
