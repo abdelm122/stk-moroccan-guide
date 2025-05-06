@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import UniDetails from "./pages/UniDetails";
@@ -14,12 +14,15 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { supabase } from "@/integrations/supabase/client";
 
-// Create a client with default options
+// Create a client with default options and improved error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      onError: (error) => {
+        console.error("Query error:", error);
+      }
     },
   },
 });
@@ -27,7 +30,7 @@ const queryClient = new QueryClient({
 const App = () => {
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean | null>(null);
   
-  // Check Supabase connection on mount
+  // Check Supabase connection on mount with improved error handling
   useEffect(() => {
     const checkConnection = async () => {
       try {
