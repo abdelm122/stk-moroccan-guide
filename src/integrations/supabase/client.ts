@@ -8,6 +8,9 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://dgoyfmccassqjlydkbat.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnb3lmbWNjYXNzcWpseWRrYmF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjYyNDIsImV4cCI6MjA2MTk0MjI0Mn0.t3bqH7jMBQr5tNAE4vOrbbLOOgrWWAW2mK3KtL5P9Bk";
 
+// Determine if we're in a GitHub Pages environment
+const isGitHubPages = window.location.hostname.includes('github.io');
+
 // Create and export the Supabase client with comprehensive options for better reliability
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -64,50 +67,55 @@ export const isAdmin = async () => {
 
 // Admin login function
 export const adminLogin = async (username: string, password: string) => {
-  // First check if the credentials match an entry in the admins table
-  const { data: adminData, error: adminError } = await supabase
-    .from('admins')
-    .select('username')
-    .eq('username', username)
-    .eq('password', password) // Note: In production, you should use hashed passwords
-    .single();
-  
-  if (adminError || !adminData) {
-    console.error("Admin authentication failed:", adminError);
-    return { error: "Invalid admin credentials" };
-  }
-  
-  // If admin exists in the table, sign in (or create an account if needed)
-  // The JWT will contain the username claim needed for RLS policies
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: `${username}@admin.stkcommunity.de`, // Use a consistent email format
-    password: password,
-  });
-  
-  if (error) {
-    // If the account doesn't exist yet, try to create it
-    if (error.message.includes('Invalid login credentials')) {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: `${username}@admin.stkcommunity.de`,
-        password: password,
-        options: {
-          data: {
-            username: username, // Store username in user metadata for JWT claims
-            role: 'admin'
-          }
-        }
-      });
-      
-      if (signUpError) {
-        console.error("Admin account creation failed:", signUpError);
-        return { error: "Failed to create admin account" };
-      }
-      
-      return { data: signUpData };
+  try {
+    // First check if the credentials match an entry in the admins table
+    const { data: adminData, error: adminError } = await supabase
+      .from('admins')
+      .select('username')
+      .eq('username', username)
+      .eq('password', password) // Note: In production, you should use hashed passwords
+      .single();
+    
+    if (adminError || !adminData) {
+      console.error("Admin authentication failed:", adminError);
+      return { error: "Invalid admin credentials" };
     }
     
-    return { error: error.message };
+    // If admin exists in the table, sign in (or create an account if needed)
+    // The JWT will contain the username claim needed for RLS policies
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: `${username}@admin.stkcommunity.de`, // Use a consistent email format
+      password: password,
+    });
+    
+    if (error) {
+      // If the account doesn't exist yet, try to create it
+      if (error.message.includes('Invalid login credentials')) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: `${username}@admin.stkcommunity.de`,
+          password: password,
+          options: {
+            data: {
+              username: username, // Store username in user metadata for JWT claims
+              role: 'admin'
+            }
+          }
+        });
+        
+        if (signUpError) {
+          console.error("Admin account creation failed:", signUpError);
+          return { error: "Failed to create admin account" };
+        }
+        
+        return { data: signUpData };
+      }
+      
+      return { error: error.message };
+    }
+    
+    return { data };
+  } catch (error) {
+    console.error("Unexpected error during admin login:", error);
+    return { error: "An unexpected error occurred during login" };
   }
-  
-  return { data };
 };
