@@ -20,7 +20,6 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      // Error handling is now configured properly for TanStack Query v5
       meta: {
         onError: (error: Error) => {
           console.error("Query error:", error);
@@ -65,7 +64,7 @@ const App = () => {
             Database connection issue. Please try again later.
           </div>
         )}
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL || "/"}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/uni/:id" element={<UniDetails />} />
