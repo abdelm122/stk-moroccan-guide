@@ -60,7 +60,7 @@ export function DocumentPageEditor() {
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
-        .eq('page_name', 'unterlagen' as unknown as any)
+        .eq('page_name', 'unterlagen')
         .maybeSingle();
         
       if (error && error.code !== 'PGRST116') { 
@@ -89,8 +89,18 @@ export function DocumentPageEditor() {
         setPageContent(content);
         
         // Initialize state with parsed data or default values
-        setFaqs(content.faqs || [{ question: "", answer: "" }]);
-        setPreparationSteps(content.preparation_steps || [{ title: "", description: "", required_items: [""] }]);
+        // We need to safely cast the JSON arrays to our specific types
+        if (data.faqs && Array.isArray(data.faqs)) {
+          setFaqs(data.faqs as FAQItem[]);
+        } else {
+          setFaqs([{ question: "", answer: "" }]);
+        }
+        
+        if (data.preparation_steps && Array.isArray(data.preparation_steps)) {
+          setPreparationSteps(data.preparation_steps as PreparationStep[]);
+        } else {
+          setPreparationSteps([{ title: "", description: "", required_items: [""] }]);
+        }
       } else {
         // Initialize with empty arrays if no data exists
         setFaqs([{ question: "", answer: "" }]);
@@ -187,8 +197,8 @@ export function DocumentPageEditor() {
       if (pageContent) {
         const { error } = await supabase
           .from('page_content')
-          .update(updateData as unknown as any)
-          .eq('id', pageContent.id as unknown as any);
+          .update(updateData)
+          .eq('id', pageContent.id);
           
         if (error) throw error;
       } 
@@ -201,7 +211,7 @@ export function DocumentPageEditor() {
         };
         const { error } = await supabase
           .from('page_content')
-          .insert(insertData as unknown as any);
+          .insert(insertData);
           
         if (error) throw error;
       }
